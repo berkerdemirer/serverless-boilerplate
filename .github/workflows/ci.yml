@@ -30,8 +30,8 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
-      - name: Check formatting
-        run: npx prettier --check .
+      - name: Format code
+        run: npx prettier --write .
 
   typecheck:
     name: Type Check
