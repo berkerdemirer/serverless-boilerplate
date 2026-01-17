@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+import PlausibleProvider from 'next-plausible';
 import './globals.css';
-import { ConvexClientProvider } from '@/components/convex-client-provider';
-import { ThemeProvider } from '@/components/theme-provider';
+import { ConvexClientProvider } from '@/components/providers/convex-client-provider';
+import { ThemeProvider } from '@/components/providers/theme-provider';
+import { env } from '@/lib/env';
 import { Toaster } from 'sonner';
 
 const geistSans = Geist({
@@ -52,6 +54,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <PlausibleProvider
+          domain={env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN ?? ''}
+          customDomain={env.NEXT_PUBLIC_PLAUSIBLE_HOST}
+          selfHosted={!!env.NEXT_PUBLIC_PLAUSIBLE_HOST}
+          trackOutboundLinks
+          enabled={!!env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN}
+        />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>
           <ConvexClientProvider>{children}</ConvexClientProvider>

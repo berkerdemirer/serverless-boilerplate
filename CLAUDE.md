@@ -33,18 +33,22 @@ Before first run: `npx convex dev` sets up the Convex deployment and adds `NEXT_
 ### Frontend (Next.js App Router)
 
 - `app/` - Next.js pages and routes using App Router
-- `components/convex-client-provider.tsx` - Wraps app with Convex + AuthKit providers; integrates WorkOS tokens with Convex auth
 - `proxy.ts` - Next.js middleware handling auth routes (sign-in, sign-up, callback)
+
+### Components Structure
+
+- `components/providers/` - Context providers (Convex client, theme)
+- `components/layout/` - Layout components (header, navigation)
+- `components/shared/` - Shared components (error boundary, theme switcher)
+- `components/ui/` - shadcn/ui primitives
+- `components/ui/form-fields/` - Form field components with react-hook-form integration
 
 ### Backend (Convex)
 
 - `convex/schema.ts` - Database schema definitions
-- `convex/myFunctions.ts` - Query, mutation, and action examples
 - `convex/auth.config.ts` - WorkOS JWT authentication configuration
 - `convex/files.ts` - File storage upload/download functions
-- `convex/http.ts` - HTTP actions for webhooks and API endpoints
 - `convex/crons.ts` - Scheduled functions (cron jobs)
-- `convex/scheduled.ts` - Internal functions for cron tasks
 - `convex/_generated/` - Auto-generated types (don't edit)
 
 ### Authentication Flow
@@ -191,11 +195,11 @@ Email functionality using Resend for delivery and React Email for templates.
 import { useAction } from "convex/react";
 import { render } from "@react-email/components";
 import { api } from "@/convex/_generated/api";
-import { WelcomeEmail } from "@/emails/welcome";
+import { ExampleEmail } from "@/emails/example";
 
 const sendEmail = useAction(api.email.send);
 
-const html = await render(<WelcomeEmail name="John" actionUrl="https://example.com" />);
+const html = await render(<ExampleEmail name="John" />);
 
 await sendEmail({
   to: "user@example.com",
@@ -266,6 +270,8 @@ Optional:
 - `SENTRY_ORG` - Sentry organization slug
 - `SENTRY_PROJECT` - Sentry project slug
 - `SENTRY_AUTH_TOKEN` - Sentry auth token for source map uploads
+- `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` - Your domain for Plausible analytics
+- `NEXT_PUBLIC_PLAUSIBLE_HOST` - Self-hosted Plausible URL (optional)
 
 Required in Convex (set via `npx convex env set`):
 
@@ -447,7 +453,7 @@ async function uploadFile(file: File) {
 
 Run tasks on a schedule.
 
-**Location**: `convex/crons.ts`, `convex/scheduled.ts`
+**Location**: `convex/crons.ts`
 
 ### Defining Cron Jobs
 
@@ -459,16 +465,16 @@ import { internal } from './_generated/api';
 const crons = cronJobs();
 
 // Every hour
-crons.interval('cleanup', { hours: 1 }, internal.scheduled.cleanup);
+crons.interval('cleanup', { hours: 1 }, internal.tasks.cleanup);
 
 // Daily at 9am UTC
-crons.daily('digest', { hourUTC: 9, minuteUTC: 0 }, internal.scheduled.sendDigest);
+crons.daily('digest', { hourUTC: 9, minuteUTC: 0 }, internal.tasks.sendDigest);
 
 // Weekly on Sunday
-crons.weekly('maintenance', { dayOfWeek: 'sunday', hourUTC: 0, minuteUTC: 0 }, internal.scheduled.maintenance);
+crons.weekly('maintenance', { dayOfWeek: 'sunday', hourUTC: 0, minuteUTC: 0 }, internal.tasks.maintenance);
 
 // Standard cron syntax
-crons.cron('frequent', '*/15 * * * *', internal.scheduled.frequentCheck);
+crons.cron('frequent', '*/15 * * * *', internal.tasks.frequentCheck);
 
 export default crons;
 ```
@@ -477,16 +483,9 @@ export default crons;
 
 Custom HTTP endpoints for webhooks and APIs.
 
-**Location**: `convex/http.ts`
-
-### Endpoints
-
-- `GET /health` - Health check
-- `POST /webhooks/:provider` - Generic webhook receiver
-- `POST /stripe-webhook` - Stripe webhook handler
-- `GET /api/stats` - Public API endpoint
-
 ### Creating HTTP Actions
+
+Create `convex/http.ts` to define custom HTTP endpoints:
 
 ```typescript
 import { httpRouter } from 'convex/server';
@@ -535,6 +534,57 @@ Generated automatically on build via `next-sitemap`.
 
 - Config: `next-sitemap.config.js`
 - Output: `public/sitemap.xml`, `public/robots.txt`
+
+## Analytics (Plausible)
+
+Privacy-friendly analytics using Plausible.
+
+**Location**: `lib/analytics.ts`, `app/layout.tsx`
+
+### Setup
+
+1. Create a Plausible account at [plausible.io](https://plausible.io) (or self-host)
+2. Add your domain to Plausible
+3. Add environment variable to `.env.local`:
+
+```bash
+NEXT_PUBLIC_PLAUSIBLE_DOMAIN=yourdomain.com
+
+# For self-hosted Plausible (optional)
+NEXT_PUBLIC_PLAUSIBLE_HOST=https://plausible.yourdomain.com
+```
+
+### Features
+
+- **Automatic page views** - All page navigations are tracked automatically
+- **Outbound link tracking** - External link clicks are tracked
+- **Privacy-friendly** - No cookies, GDPR compliant by default
+- **Lightweight** - < 1KB script
+
+### Custom Events
+
+```tsx
+// In React components - use the hook
+import { usePlausible } from '@/lib/analytics';
+
+function MyComponent() {
+  const plausible = usePlausible();
+
+  const handleSignup = () => {
+    plausible('signup', { props: { plan: 'pro' } });
+  };
+
+  return <button onClick={handleSignup}>Sign Up</button>;
+}
+
+// Outside React - use the function
+import { trackEvent } from '@/lib/analytics';
+
+trackEvent('purchase', {
+  props: { product: 'Pro Plan' },
+  revenue: { currency: 'USD', amount: 29.99 }
+});
+```
 
 ## Error Monitoring (Sentry)
 
@@ -597,4 +647,5 @@ GitHub Actions workflow at `.github/workflows/ci.yml`:
 - **lint** - ESLint + Prettier check
 - **typecheck** - TypeScript compilation
 - **test** - Vitest tests
-- **build** - Next.js build (runs after lint/typecheck/test pass)
+
+Build and deployment are handled by Vercel.

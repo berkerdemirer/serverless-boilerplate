@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
-import { Header } from '@/components/home/header';
-import { AuthContent } from '@/components/home/auth-content';
+import { Header } from '@/components/layout/header';
+import { AuthContent } from '@/components/shared/auth-content';
 
 export default function Home() {
   return (

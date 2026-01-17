@@ -46,6 +46,9 @@ export const env = createEnv({
     }),
     // Sentry DSN (optional - errors captured when set)
     NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
+    // Plausible Analytics (optional - tracking enabled when domain is set)
+    NEXT_PUBLIC_PLAUSIBLE_DOMAIN: z.string().optional(),
+    NEXT_PUBLIC_PLAUSIBLE_HOST: z.url().optional(),
   },
 
   /**
@@ -56,6 +59,8 @@ export const env = createEnv({
     NEXT_PUBLIC_CONVEX_URL: process.env.NEXT_PUBLIC_CONVEX_URL,
     NEXT_PUBLIC_WORKOS_REDIRECT_URI: process.env.NEXT_PUBLIC_WORKOS_REDIRECT_URI,
     NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
+    NEXT_PUBLIC_PLAUSIBLE_DOMAIN: process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN,
+    NEXT_PUBLIC_PLAUSIBLE_HOST: process.env.NEXT_PUBLIC_PLAUSIBLE_HOST,
   },
 
   /**

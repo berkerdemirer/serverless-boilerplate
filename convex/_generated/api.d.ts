@@ -11,9 +11,6 @@
 import type * as crons from "../crons.js";
 import type * as email from "../email.js";
 import type * as files from "../files.js";
-import type * as http from "../http.js";
-import type * as myFunctions from "../myFunctions.js";
-import type * as scheduled from "../scheduled.js";
 import type * as testing from "../testing.js";
 
 import type {
@@ -26,9 +23,6 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   email: typeof email;
   files: typeof files;
-  http: typeof http;
-  myFunctions: typeof myFunctions;
-  scheduled: typeof scheduled;
   testing: typeof testing;
 }>;
 
